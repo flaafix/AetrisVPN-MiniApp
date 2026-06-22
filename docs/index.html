@@ -2,17 +2,89 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>VPN Доступ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetrisVPN</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .btn { display: block; margin: 10px auto; padding: 15px; width: 80%; background: #0088cc; color: white; border-radius: 10px; cursor: pointer; }
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #1c1c1e);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --accent: #6c5ce7;
+            --accent-hover: #a29bfe;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 { margin-top: 20px; font-weight: 700; letter-spacing: 1px; color: var(--accent); }
+
+        .btn-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+
+        button {
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #6c5ce7, #8e44ad);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active { transform: scale(0.95); }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+            text-align: center;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <h2>Выберите VPN ключ:</h2>
-    <div class="btn" onclick="alert('ЧС VPN: ВАША_ССЫЛКА_1')">Черные списки</div>
-    <div class="btn" onclick="alert('Белые списки: ВАША_ССЫЛКА_2')">Белые списки</div>
-    <div class="btn" onclick="alert('Белые списки Лайт: ВАША_ССЫЛКА_3')">Белые списки Лайт</div>
+
+    <h1>AetrisVPN</h1>
+    
+    <div class="btn-container">
+        <button onclick="showLink('ЧС')">Черные списки (VPN)</button>
+        <button onclick="showLink('Белый')">Белые списки (Обход)</button>
+        <button onclick="showLink('Лайт')">Белые списки (Лайт)</button>
+    </div>
+
+    <div id="result">
+        <p id="link-text" style="word-break: break-all;"></p>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Разворачивает приложение на весь экран
+
+        function showLink(type) {
+            const links = {
+                'ЧС': 'ВАША_ССЫЛКА_1',
+                'Белый': 'ВАША_ССЫЛКА_2',
+                'Лайт': 'ВАША_ССЫЛКА_3'
+            };
+            const display = document.getElementById('result');
+            document.getElementById('link-text').innerText = links[type];
+            display.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
