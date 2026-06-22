@@ -2,102 +2,189 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetrisVPN Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aetris Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.05);
-            --text: #ffffff;
-            --accent: #ffffff;
+            --neon: linear-gradient(135deg, #ff0055, #7000ff);
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
-            margin: 0; padding: 0; height: 100%;
-            font-family: 'SF Pro Display', -apple-system, sans-serif;
-            color: var(--text);
-            /* Фон с каплями */
-            background: radial-gradient(circle at center, #2c3e50, #000000);
-            overflow: hidden;
+            margin: 0; padding: 0; 
+            width: 100%; min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden; /* Запрещаем горизонтальный скролл */
         }
 
-        /* Эффект капель */
-        body::before {
-            content: "";
-            position: absolute; width: 100%; height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/rain.png');
-            opacity: 0.15; pointer-events: none;
+        /* Реалистичный фон с каплями и размытым лого */
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 50% 30%, rgba(112, 0, 255, 0.15), transparent),
+                url('https://www.transparenttextures.com/patterns/rain.png');
+            opacity: 0.4; z-index: -1;
         }
 
         .container {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; height: 100%; z-index: 1;
-            padding: 20px;
+            width: 100%;
+            max-width: 400px; /* Ограничение для больших экранов */
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
-        h1 { font-weight: 200; letter-spacing: 5px; margin-bottom: 40px; text-transform: uppercase; }
+        .logo-text {
+            font-size: 32px;
+            font-weight: 200;
+            letter-spacing: 12px;
+            margin-bottom: 50px;
+            background: var(--neon);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.5));
+            text-transform: uppercase;
+        }
 
         .capsule {
-            width: 100%; max-width: 320px; padding: 18px 25px;
-            margin: 10px; border-radius: 50px;
+            position: relative;
+            width: 100%; /* Теперь всегда в границах экрана */
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 100px; /* Форма капсулы */
             background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(15px);
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center; font-weight: 500; letter-spacing: 1px;
-            animation: fadeIn 0.8s ease-out forwards;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            animation: slideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
             opacity: 0;
         }
 
-        .capsule:nth-child(2) { animation-delay: 0.2s; }
-        .capsule:nth-child(3) { animation-delay: 0.4s; }
-        .capsule:nth-child(4) { animation-delay: 0.6s; }
-
-        .capsule:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
-        .capsule:active { transform: scale(0.95); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        #toast {
-            position: fixed; bottom: 50px; padding: 15px 30px;
-            background: white; color: black; border-radius: 50px;
-            font-weight: bold; display: none; animation: pop 0.3s;
+        /* Анимация появления */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
-        @keyframes pop { from { transform: scale(0.5); } to { transform: scale(1); } }
+
+        .capsule:nth-child(2) { animation-delay: 0.1s; }
+        .capsule:nth-child(3) { animation-delay: 0.2s; }
+        .capsule:nth-child(4) { animation-delay: 0.3s; }
+
+        .capsule:active {
+            transform: scale(0.96);
+            border-color: #ff0055;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+        }
+
+        /* Центрированное уведомление */
+        #toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px); /* Спрятан внизу по центру */
+            background: #fff;
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0); /* Появляется по центру */
+        }
+
+        .loader {
+            font-size: 10px;
+            opacity: 0.5;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div class="bg-overlay"></div>
+    
     <div class="container">
-        <h1>Aetris</h1>
-        <div class="capsule" onclick="copy('ЧС')">ЧЕРНЫЙ СПИСОК</div>
-        <div class="capsule" onclick="copy('Белый')">БЕЛЫЙ СПИСОК</div>
-        <div class="capsule" onclick="copy('Лайт')">ЛАЙТ РЕЖИМ</div>
+        <div class="logo-text">AETRIS</div>
+        
+        <div class="capsule" onclick="copy('ЧС', this)">
+            ЧЕРНЫЙ СПИСОК
+            <div class="loader">ПОЛУЧЕНИЕ...</div>
+        </div>
+        
+        <div class="capsule" onclick="copy('Белый', this)">
+            БЕЛЫЙ СПИСОК
+            <div class="loader">ПОЛУЧЕНИЕ...</div>
+        </div>
+        
+        <div class="capsule" onclick="copy('Лайт', this)">
+            ЛАЙТ РЕЖИМ
+            <div class="loader">ПОЛУЧЕНИЕ...</div>
+        </div>
     </div>
 
-    <div id="toast">СКОПИРОВАНО</div>
+    <div id="toast">СКОПИРОВАНО В БУФЕР</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        async function copy(type) {
+        tg.backgroundColor = '#000000';
+        tg.headerColor = '#000000';
+
+        async function copy(type, element) {
             const urls = {
                 'ЧС': 'https://raw.githubusercontent.com/flaafix/AetrisVPN-black-list/refs/heads/main/configs.txt',
                 'Белый': 'https://raw.githubusercontent.com/flaafix/AetrisVPN/refs/heads/main/AetrisVPN.txt',
                 'Лайт': 'https://raw.githubusercontent.com/flaafix/AetrisVPN-white-list-lite/refs/heads/main/AetrisVPN.txt'
             };
-            const btn = event.currentTarget;
-            btn.style.borderColor = "white";
-            
+
+            const loader = element.querySelector('.loader');
+            loader.style.display = 'block';
+
             try {
-                const res = await fetch(urls[type]);
-                const text = await res.text();
-                await navigator.clipboard.writeText(text);
+                const response = await fetch(urls[type]);
+                const configText = await response.text();
+                
+                await navigator.clipboard.writeText(configText);
+                
+                // Вибрация
                 tg.HapticFeedback.notificationOccurred('success');
-                const t = document.getElementById('toast');
-                t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 2000);
-            } catch (e) { alert("Ошибка"); }
-            btn.style.borderColor = "rgba(255,255,255,0.1)";
+                
+                // Показ уведомления
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+                
+            } catch (err) {
+                tg.HapticFeedback.notificationOccurred('error');
+                alert("Ошибка сети");
+            } finally {
+                loader.style.display = 'none';
+            }
         }
     </script>
 </body>
