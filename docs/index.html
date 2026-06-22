@@ -6,84 +6,36 @@
     <title>AetrisVPN</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: var(--tg-theme-bg-color, #1c1c1e);
-            --text-color: var(--tg-theme-text-color, #ffffff);
-            --accent: #6c5ce7;
-            --accent-hover: #a29bfe;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        h1 { margin-top: 20px; font-weight: 700; letter-spacing: 1px; color: var(--accent); }
-
-        .btn-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
-
-        button {
-            padding: 18px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #6c5ce7, #8e44ad);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        button:active { transform: scale(0.95); }
-
-        #result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            display: none;
-            animation: fadeIn 0.5s ease-in;
-            text-align: center;
-        }
-
+        :root { --bg-color: #1c1c1e; --accent: #6c5ce7; }
+        body { background: var(--bg-color); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .btn { padding: 18px 30px; background: linear-gradient(135deg, #6c5ce7, #8e44ad); color: white; border: none; border-radius: 16px; cursor: pointer; transition: 0.3s; margin: 10px; width: 100%; max-width: 300px; }
+        .btn:active { transform: scale(0.95); }
+        #result { margin-top: 30px; padding: 20px; border-radius: 16px; background: rgba(108, 92, 231, 0.15); border: 1px solid var(--accent); display: none; animation: fadeIn 0.4s; text-align: center; width: 90%; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <h1>AetrisVPN</h1>
-    
-    <div class="btn-container">
-        <button onclick="showLink('ЧС')">Черные списки (VPN)</button>
-        <button onclick="showLink('Белый')">Белые списки (Обход)</button>
-        <button onclick="showLink('Лайт')">Белые списки (Лайт)</button>
-    </div>
+    <button class="btn" onclick="copyAndShow('ЧС')">Черные списки (VPN)</button>
+    <button class="btn" onclick="copyAndShow('Белый')">Белые списки (Обход)</button>
+    <button class="btn" onclick="copyAndShow('Лайт')">Белые списки (Лайт)</button>
 
     <div id="result">
-        <p id="link-text" style="word-break: break-all;"></p>
+        <p id="link-text"></p>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачивает приложение на весь экран
-
-        function showLink(type) {
+        window.Telegram.WebApp.expand();
+        async function copyAndShow(type) {
             const links = {
                 'ЧС': 'https://raw.githubusercontent.com/flaafix/AetrisVPN-black-list/refs/heads/main/configs.txt',
                 'Белый': 'https://raw.githubusercontent.com/flaafix/AetrisVPN/refs/heads/main/AetrisVPN.txt',
                 'Лайт': 'https://raw.githubusercontent.com/flaafix/AetrisVPN-white-list-lite/refs/heads/main/AetrisVPN.txt'
             };
+            await navigator.clipboard.writeText(links[type]);
             const display = document.getElementById('result');
-            document.getElementById('link-text').innerText = links[type];
             display.style.display = 'block';
+            document.getElementById('link-text').innerHTML = `<strong>✅ Скопировано!</strong><br><br>1. Открой VPN-клиент.<br>2. Нажми <b>«+»</b> -> <b>Импорт из буфера</b>.`;
         }
     </script>
 </body>
