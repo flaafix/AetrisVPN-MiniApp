@@ -387,8 +387,7 @@
   <!-- APP -->
   <div id="app">
     <div class="header">
-      <div class="header-title">VPN</div>
-      <div class="header-sub">Aetris</div>
+      <div class="header-title">AetrisVPN</div>
     </div>
 
     <!-- Connection Status -->
@@ -404,7 +403,7 @@
     </div>
 
     <!-- Settings Group -->
-    <div class="section-label">Серверы</div>
+    <div class="section-label">Подписки</div>
     <div class="settings-group">
       <div class="settings-item" data-url="blacklist" data-name="Blacklist" data-label="BLACKLIST">
         <div class="item-icon icon-bl">🌐</div>
@@ -440,6 +439,7 @@
     <div class="footer">
       <button class="footer-link" onclick="openTutorial()">Tutorial</button>
       <button class="footer-link" onclick="openChannel()">Channel</button>
+      <button class="footer-link" onclick="openDonate()">Donate</button>
     </div>
   </div>
 
@@ -462,23 +462,23 @@
     <div id="tut-container">
       <div class="tut-slide active">
         <div class="tut-icon">📱</div>
-        <h3>Install an App</h3>
-        <p>Download Hiddify, Streisand or V2Ray for your device from the app store</p>
+        <h3>Установи приложение</h3>
+        <p>Скачай Hiddify, Streisand или V2Ray из магазина приложений на своём устройстве</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">📋</div>
-        <h3>Copy Subscription</h3>
-        <p>Tap Blacklist, Whitelist or Lite WL. The link will be copied to your clipboard</p>
+        <h3>Скопируй подписку</h3>
+        <p>Нажми на Blacklist, Whitelist или Lite WL. Ссылка скопируется в буфер обмена</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">📲</div>
-        <h3>Import to Client</h3>
-        <p>Open your VPN app, find "Import from clipboard" or "Add from clipboard" and paste</p>
+        <h3>Импортируй в клиент</h3>
+        <p>Открой VPN-приложение, найди «Импорт из буфера» или «Добавить из буфера» и вставь</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">🚀</div>
-        <h3>Done!</h3>
-        <p>You're connected. Your internet is now protected. Welcome to AetrisVPN!</p>
+        <h3>Готово!</h3>
+        <p>Ты подключён. Твой интернет теперь защищён. Добро пожаловать в AetrisVPN!</p>
       </div>
       <div class="tut-dots" id="tutDots">
         <span class="tut-dot active" onclick="goTutSlide(0)"></span>
@@ -604,6 +604,9 @@
 
     // ===== CHANNEL =====
     function openChannel() { tg?.openTelegramLink?.('https://t.me/AetrisVPN'); }
+
+    // ===== DONATE =====
+    function openDonate() { window.open('https://pay.cloudtips.ru/p/6f2a7544', '_blank'); }
   </script>
 </body>
 </html>
