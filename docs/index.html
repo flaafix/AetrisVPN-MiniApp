@@ -5,42 +5,36 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
   <title>AetrisVPN</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #000000;
-      --card: rgba(255,255,255,0.05);
-      --card-border: rgba(255,255,255,0.08);
+      --bg: #08080c;
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.12);
+      --glass-hover: rgba(255,255,255,0.12);
       --text: #FFFFFF;
-      --text-secondary: rgba(255,255,255,0.6);
-      --text-tertiary: rgba(255,255,255,0.3);
-      --accent: #7C3AED;
-      --accent-light: rgba(124,58,237,0.15);
+      --text-secondary: rgba(255,255,255,0.65);
+      --text-tertiary: rgba(255,255,255,0.35);
+      --accent: #FF453A;
       --green: #34C759;
       --red: #FF453A;
+      --purple: #7C3AED;
+      --pill: 100px;
       --radius-lg: 28px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-sm: 16px;
       --safe-top: env(safe-area-inset-top, 12px);
       --safe-bottom: env(safe-area-inset-bottom, 16px);
     }
     html, body {
       height: 100%; overflow: hidden;
       background: var(--bg); color: var(--text);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 80% 90%, rgba(124,58,237,0.04) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
     }
 
     /* ===== SPLASH ===== */
@@ -49,540 +43,779 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       background: var(--bg);
-      transition: opacity 0.4s ease, transform 0.4s ease;
+      transition: opacity .6s ease, transform .6s ease;
     }
-    #splash.hide {
-      opacity: 0; transform: scale(0.96);
-      pointer-events: none;
-    }
+    #splash.hide { opacity: 0; transform: scale(.95); pointer-events: none; }
     .splash-logo {
-      font-size: 40px; font-weight: 800; letter-spacing: 4px;
-      color: var(--text);
+      font-size: 44px; font-weight: 900; letter-spacing: 6px;
+      background: linear-gradient(135deg, #ff4060, #8b00ff, #4080ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: splashPulse 2s ease-in-out infinite;
     }
+    @keyframes splashPulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
     .splash-sub {
-      margin-top: 8px; font-size: 13px; font-weight: 400;
-      color: var(--text-secondary); letter-spacing: 6px;
+      margin-top: 6px; font-size: 13px; font-weight: 600;
+      color: var(--text-tertiary); letter-spacing: 8px;
       text-transform: uppercase;
     }
     .splash-loader {
-      margin-top: 28px; width: 100px; height: 2px;
-      background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+      margin-top: 32px; width: 120px; height: 3px;
+      background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden;
     }
     .splash-loader-bar {
       height: 100%; width: 0;
-      background: var(--accent);
-      border-radius: 2px;
-      animation: loadBar 1.2s 0.4s ease forwards;
+      background: linear-gradient(90deg, #ff4060, #8b00ff, #4080ff);
+      border-radius: 100px;
+      animation: loadBar 1.2s .4s ease forwards;
     }
-    @keyframes loadBar {
-      to { width: 100%; }
-    }
+    @keyframes loadBar { to { width: 100%; } }
 
     /* ===== APP ===== */
     #app {
       position: fixed; inset: 0; z-index: 1;
       display: flex; flex-direction: column;
       padding: var(--safe-top) 16px var(--safe-bottom);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      overflow-y: auto;
-      overflow-x: hidden;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .6s ease, transform .6s ease;
+      overflow-y: auto; overflow-x: hidden;
     }
-    #app.show {
-      opacity: 1;
-    }
+    #app.show { opacity: 1; transform: translateY(0); }
     #app::-webkit-scrollbar { width: 0; }
 
+    /* ===== STAGGER ANIMATION ===== */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px) scale(.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .stagger { opacity: 0; animation: cardIn .5s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .stagger:nth-child(1) { animation-delay: .05s; }
+    .stagger:nth-child(2) { animation-delay: .12s; }
+    .stagger:nth-child(3) { animation-delay: .19s; }
+    .stagger:nth-child(4) { animation-delay: .26s; }
+    .stagger:nth-child(5) { animation-delay: .33s; }
+    .stagger:nth-child(6) { animation-delay: .40s; }
+
     /* ===== HEADER ===== */
-    .header {
-      padding: 20px 4px 8px;
-    }
+    .header { padding: 20px 4px 12px; }
     .header-title {
-      font-size: 34px; font-weight: 800;
+      font-size: 32px; font-weight: 900;
       letter-spacing: -0.5px;
-      color: var(--text);
-    }
-    .header-sub {
-      font-size: 15px; font-weight: 400;
-      color: var(--text-secondary);
-      margin-top: 2px;
+      background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.6));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    /* ===== CONNECTION STATUS ===== */
-    .connection-card {
-      margin: 4px 0 20px;
-      padding: 18px 20px;
-      background: var(--card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+    /* ===== GLASS CARD ===== */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border: 1px solid var(--glass-border);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--card-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: transform 0.15s ease, border-color 0.2s ease;
+      transition: all .3s cubic-bezier(0.22,1,0.36,1);
     }
-    .connection-card:active {
-      transform: scale(0.96);
+    .glass-card:hover { background: var(--glass-hover); }
+
+    /* ===== STATUS ===== */
+    .status-pill {
+      margin: 0 0 20px;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-radius: var(--pill);
+      background: var(--glass);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border: 1px solid var(--glass-border);
     }
-    .conn-left {
-      display: flex; align-items: center; gap: 14px;
-    }
-    .conn-dot {
+    .status-left { display: flex; align-items: center; gap: 12px; }
+    .status-dot {
       width: 10px; height: 10px; border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 12px rgba(52,199,89,0.3);
-      flex-shrink: 0;
-      animation: connPulse 2.4s ease-in-out infinite;
+      box-shadow: 0 0 16px rgba(52,199,89,0.4);
+      animation: dotPulse 2s ease-in-out infinite;
     }
-    @keyframes connPulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(52,199,89,0.3); }
-      50% { opacity: 0.5; box-shadow: 0 0 20px rgba(52,199,89,0.1); }
+    @keyframes dotPulse {
+      0%,100%{ box-shadow: 0 0 16px rgba(52,199,89,0.4); }
+      50%{ box-shadow: 0 0 24px rgba(52,199,89,0.15); }
     }
-    .conn-info {
-      display: flex; flex-direction: column;
-    }
-    .conn-label {
-      font-size: 15px; font-weight: 600; color: var(--text);
-      letter-spacing: -0.2px;
-    }
-    .conn-status {
-      font-size: 13px; font-weight: 400; color: var(--green);
-      margin-top: 1px;
-    }
-    .conn-badge {
-      font-size: 12px; font-weight: 500;
-      color: var(--text-secondary);
-      padding: 4px 10px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 100px;
-      white-space: nowrap;
+    .status-label { font-size: 14px; font-weight: 700; }
+    .status-sub { font-size: 12px; color: var(--green); margin-top: 1px; }
+    .status-badge {
+      font-size: 11px; font-weight: 700; color: var(--text-secondary);
+      padding: 5px 14px; background: rgba(255,255,255,0.06);
+      border-radius: var(--pill); letter-spacing: .5px;
     }
 
-    /* ===== SECTION ===== */
-    .section-label {
-      font-size: 13px; font-weight: 600;
+    /* ===== RAIL SELECTOR ===== */
+    .rail {
+      position: relative;
+      display: flex;
+      padding: 4px;
+      --i: 0;
+      background: var(--glass);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border-radius: var(--pill);
+      border: 1px solid var(--glass-border);
+      margin-bottom: 16px;
+    }
+    .rail::before {
+      content: '';
+      position: absolute;
+      top: 4px; bottom: 4px; left: 4px;
+      width: calc((100% - 8px) / 3);
+      transform: translateX(calc(var(--i) * 100%));
+      transition: transform .45s cubic-bezier(0.34,1.56,0.64,1);
+      background: linear-gradient(135deg, rgba(255,69,58,0.25), rgba(124,58,237,0.2));
+      border-radius: calc(var(--pill) - 4px);
+      box-shadow: 0 2px 12px rgba(124,58,237,0.15);
+    }
+    .rail:has(button:nth-child(2):hover) { --i: 1; }
+    .rail:has(button:nth-child(3):hover) { --i: 2; }
+    .rail button {
+      flex: 1 1 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 3px;
+      padding: 14px 0;
+      background: none; border: none;
       color: var(--text-tertiary);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding: 0 4px 10px;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      cursor: pointer; position: relative; z-index: 1;
+      transition: color .3s ease;
+      letter-spacing: .3px;
     }
+    .rail button .rail-emoji { font-size: 18px; }
+    .rail button.active { color: var(--text); }
 
-    /* ===== SETTINGS LIST (iOS style) ===== */
-    .settings-group {
-      display: flex; flex-direction: column; gap: 1px;
-      background: var(--card);
+    /* ===== SUB CARD ===== */
+    .sub-card {
+      padding: 22px;
+      margin-bottom: 16px;
+      border-radius: var(--radius-lg);
+    }
+    .sub-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .sub-icon {
+      width: 52px; height: 52px; border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+      transition: transform .3s ease;
+    }
+    .sub-card:hover .sub-icon { transform: scale(1.08) rotate(-3deg); }
+    .sub-icon[data-color="red"] { background: rgba(255,69,58,0.15); }
+    .sub-icon[data-color="purple"] { background: rgba(124,58,237,0.15); }
+    .sub-icon[data-color="green"] { background: rgba(52,199,89,0.15); }
+    .sub-meta { flex: 1; }
+    .sub-name { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+    .sub-desc { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+    .sub-tag {
+      font-size: 11px; font-weight: 700; padding: 4px 12px;
+      border-radius: var(--pill); letter-spacing: .5px;
+    }
+    .sub-tag[data-color="red"] { background: rgba(255,69,58,0.15); color: #FF6B7A; }
+    .sub-tag[data-color="purple"] { background: rgba(124,58,237,0.15); color: #A78BFA; }
+    .sub-tag[data-color="green"] { background: rgba(52,199,89,0.15); color: #6BDB8F; }
+
+    .sub-actions { display: flex; gap: 10px; }
+    .sub-btn {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 15px 0;
+      border-radius: var(--pill);
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--card-border);
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .settings-item {
-      position: relative;
-      display: flex; align-items: center;
-      padding: 14px 18px;
-      gap: 14px;
+      color: var(--text);
+      font-family: inherit; font-size: 14px; font-weight: 700;
       cursor: pointer;
-      transition: background 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 52px;
+      transition: all .25s cubic-bezier(0.22,1,0.36,1);
     }
-    .settings-item:active {
-      background: rgba(255,255,255,0.08);
+    .sub-btn:active { transform: scale(.95); }
+    .sub-btn.primary {
+      background: linear-gradient(135deg, #FF453A, #E0332E);
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(255,69,58,0.25);
     }
-    .settings-item:not(:last-child)::after {
-      content: '';
-      position: absolute; bottom: 0; left: 56px; right: 0;
-      height: 1px;
-      background: rgba(255,255,255,0.05);
-    }
-    .settings-item .item-icon {
-      width: 30px; height: 30px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-    }
-    .settings-item .item-body {
-      flex: 1; min-width: 0;
-    }
-    .settings-item .item-title {
-      font-size: 15px; font-weight: 500; color: var(--text);
-      letter-spacing: -0.2px;
-    }
-    .settings-item .item-desc {
-      font-size: 12px; font-weight: 400;
-      color: var(--text-secondary); margin-top: 1px;
-    }
-    .settings-item .item-trailing {
-      font-size: 14px; font-weight: 400;
-      color: var(--text-tertiary);
-      flex-shrink: 0;
-      padding: 3px 10px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 100px;
-    }
-    .settings-item .item-chevron {
-      font-size: 10px; color: var(--text-tertiary);
-      flex-shrink: 0; margin-left: 4px;
-    }
+    .sub-btn.primary:active { box-shadow: 0 2px 10px rgba(255,69,58,0.15); }
+    .sub-btn .btn-icon { font-size: 16px; }
 
-    /* ===== COLORS FOR ICONS ===== */
-    .icon-bl { background: rgba(255,69,58,0.12); }
-    .icon-wl { background: rgba(124,58,237,0.12); }
-    .icon-lite { background: rgba(52,199,89,0.12); }
-    .trailing-bl { background: rgba(255,69,58,0.12); color: #FF453A; }
-    .trailing-wl { background: rgba(124,58,237,0.12); color: #A78BFA; }
-    .trailing-lite { background: rgba(52,199,89,0.12); color: #34C759; }
+    /* ===== DRAWER ===== */
+    .drawer-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45);
+      opacity: 0; pointer-events: none;
+      transition: opacity .35s ease;
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 201;
+      max-width: 480px; margin: 0 auto;
+      background: rgba(20,20,30,0.92);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border-top: 1px solid var(--glass-border);
+      border-radius: 28px 28px 0 0;
+      padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform .45s cubic-bezier(0.32, 0.72, 0, 1),
+                  opacity .35s ease;
+    }
+    .drawer-overlay.open .drawer-panel {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .drawer-handle {
+      width: 36px; height: 4px; margin: 0 auto 20px;
+      border-radius: 4px; background: rgba(255,255,255,0.2);
+    }
+    .drawer-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+      opacity: 0; transform: translateY(18px);
+      transition: transform .4s cubic-bezier(0.32, 0.72, 0, 1) .06s,
+                  opacity .35s ease .06s;
+    }
+    .drawer-overlay.open .drawer-header { opacity: 1; transform: translateY(0); }
+    .drawer-logo {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: #fff;
+      box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+      flex-shrink: 0;
+    }
+    .drawer-title {
+      font-size: 20px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .drawer-desc {
+      font-size: 14px; line-height: 1.5; color: var(--text-secondary);
+      margin-bottom: 20px;
+      opacity: 0; transform: translateY(18px);
+      transition: transform .4s cubic-bezier(0.32, 0.72, 0, 1) .12s,
+                  opacity .35s ease .12s;
+    }
+    .drawer-overlay.open .drawer-desc { opacity: 1; transform: translateY(0); }
+    .drawer-btn-copy {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px 0;
+      border: none; border-radius: var(--pill);
+      background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+      color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
+      cursor: pointer; position: relative; overflow: hidden;
+      box-shadow: 0 4px 24px rgba(139,92,246,0.3);
+      opacity: 0; transform: translateY(18px);
+      transition: transform .4s cubic-bezier(0.32, 0.72, 0, 1) .18s,
+                  opacity .35s ease .18s,
+                  box-shadow .25s ease;
+    }
+    .drawer-overlay.open .drawer-btn-copy { opacity: 1; transform: translateY(0); }
+    .drawer-btn-copy:hover { box-shadow: 0 6px 32px rgba(139,92,246,0.45); }
+    .drawer-btn-copy:active { transform: scale(.97) !important; }
+    .drawer-btn-copy .copy-shine {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+      transform: translateX(-200%);
+      transition: none;
+    }
+    .drawer-btn-copy.copied .copy-shine {
+      animation: copyShine .6s ease forwards;
+    }
+    @keyframes copyShine {
+      0% { transform: translateX(-200%); }
+      100% { transform: translateX(200%); }
+    }
+    .drawer-btn-close {
+      display: block; width: 100%; margin-top: 10px;
+      padding: 14px 0; border: 1px solid var(--glass-border);
+      border-radius: var(--pill); background: var(--glass);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      color: var(--text-secondary); font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      opacity: 0; transform: translateY(18px);
+      transition: transform .4s cubic-bezier(0.32, 0.72, 0, 1) .24s,
+                  opacity .35s ease .24s,
+                  background .2s ease;
+    }
+    .drawer-overlay.open .drawer-btn-close { opacity: 1; transform: translateY(0); }
+    .drawer-btn-close:hover { background: var(--glass-hover); }
+    .drawer-btn-close:active { transform: scale(.97) !important; }
 
     /* ===== FOOTER ===== */
     .footer {
-      display: flex; justify-content: center; gap: 24px;
-      padding: 6px 0 4px;
+      display: flex; justify-content: center; gap: 8px;
+      padding: 4px 0 8px;
     }
-    .footer-link {
-      font-size: 13px; font-weight: 400;
+    .footer-pill {
+      font-size: 12px; font-weight: 600;
       color: var(--text-tertiary);
-      cursor: pointer; transition: color 0.15s;
-      background: none; border: none; font-family: inherit;
-      padding: 4px 0;
-      letter-spacing: 0.3px;
+      cursor: pointer; background: none; border: none;
+      font-family: inherit; padding: 6px 14px;
+      border-radius: var(--pill);
+      transition: all .2s ease;
+      letter-spacing: .3px;
     }
-    .footer-link:active { color: var(--text-secondary); }
+    .footer-pill:active { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
+    .footer-share {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: linear-gradient(135deg, #f43f5e, #ec4899, #8b5cf6);
+      background-size: 200% 200%;
+      animation: footerGrad 4s ease infinite;
+      color: #fff; font-weight: 700;
+      padding: 6px 16px;
+      box-shadow: 0 3px 16px rgba(236,72,153,0.35);
+    }
+    .footer-share .btn-icon { font-size: 13px; }
+    .footer-share:active { background: linear-gradient(135deg, #e11d48, #db2777, #7c3aed); color: #fff; transform: scale(.95); }
+    @keyframes footerGrad {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-    /* ===== TOAST (iOS style) ===== */
+    /* ===== TOAST ===== */
     #toast {
       position: fixed; bottom: 60px; left: 50%; z-index: 50;
       transform: translateX(-50%) translateY(80px);
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      color: var(--text); padding: 10px 22px;
-      border-radius: 100px; font-weight: 500; font-size: 14px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+      background: rgba(20,20,30,0.85);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      color: var(--text); padding: 12px 24px;
+      border-radius: var(--pill); font-weight: 600; font-size: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      transition: transform .5s cubic-bezier(0.34,1.56,0.64,1), opacity .3s ease;
       opacity: 0; pointer-events: none;
       display: flex; align-items: center; gap: 8px;
       white-space: nowrap;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .toast-icon {
-      font-size: 16px;
-    }
 
-    /* ===== QR OVERLAY (iOS style) ===== */
+    /* ===== QR OVERLAY ===== */
     #qr-overlay {
       position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease;
+      transition: opacity .3s ease;
+      --qr-accent: #FF453A;
+      --qr-glow: #FF453A66;
     }
     #qr-overlay.show { opacity: 1; pointer-events: all; }
     #qr-modal {
-      background: var(--card);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 32px 24px 24px;
-      width: 300px; max-width: 85vw;
+      background: rgba(20,20,30,0.9);
+      backdrop-filter: blur(60px) saturate(2);
+      -webkit-backdrop-filter: blur(60px) saturate(2);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      padding: 36px 28px 28px;
+      width: 320px; max-width: 85vw;
       text-align: center;
-      transform: scale(0.9) translateY(15px);
-      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      transform: scale(.85) translateY(20px);
+      transition: transform .45s cubic-bezier(0.34,1.56,0.64,1);
     }
     #qr-overlay.show #qr-modal { transform: scale(1) translateY(0); }
-    #qr-modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+    #qr-modal h3 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    #qr-modal h3 .qr-emoji { margin-right: 6px; }
     #qr-modal .qr-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-    #qr-code-container { display: flex; justify-content: center; margin-bottom: 16px; }
-    #qr-code-container img { border-radius: 14px; }
-    .qr-url-label {
+
+    #qr-code-container {
+      display: flex; justify-content: center; align-items: center;
+      margin-bottom: 18px; position: relative;
+    }
+    .qr-card {
+      position: relative;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 14px;
+      animation: qrPop .5s cubic-bezier(0.34,1.56,0.64,1) both;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06), 0 0 44px var(--qr-glow);
+    }
+    .qr-card img { display: block; width: 190px; height: 190px; border-radius: 14px; }
+    .qr-corner {
+      position: absolute; width: 20px; height: 20px;
+      border: 3px solid var(--qr-accent);
+      opacity: .95;
+      filter: drop-shadow(0 0 6px var(--qr-glow));
+      z-index: 2;
+    }
+    .qr-corner.tl { top: 5px; left: 5px; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+    .qr-corner.tr { top: 5px; right: 5px; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
+    .qr-corner.bl { bottom: 5px; left: 5px; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
+    .qr-corner.br { bottom: 5px; right: 5px; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
+    .qr-scanline {
+      position: absolute; left: 12%; right: 12%; top: 8%;
+      height: 3px; border-radius: 3px;
+      background: linear-gradient(90deg, transparent, var(--qr-accent), transparent);
+      opacity: .75; pointer-events: none; z-index: 2;
+      animation: qrScan 2.2s ease-in-out infinite;
+    }
+    @keyframes qrScan {
+      0%   { top: 8%;  opacity: 0; }
+      12%  { opacity: .8; }
+      88%  { opacity: .8; }
+      100% { top: 90%; opacity: 0; }
+    }
+    @keyframes qrPop {
+      0% { transform: scale(.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .qr-url {
       font-size: 10px; color: var(--text-tertiary); word-break: break-all;
-      margin-bottom: 16px; padding: 8px 12px;
-      background: rgba(0,0,0,0.3); border-radius: 10px;
-      font-family: 'SF Mono', 'Menlo', monospace; line-height: 1.4;
+      margin-bottom: 16px; padding: 10px 14px;
+      background: rgba(0,0,0,0.3); border-radius: 14px;
+      font-family: 'SF Mono', monospace; line-height: 1.5;
     }
     .qr-close {
-      padding: 12px 0; width: 100%;
-      background: var(--accent);
-      border-radius: var(--radius-sm);
-      color: #fff; font-size: 15px; font-weight: 600;
+      padding: 14px 0; width: 100%;
+      background: linear-gradient(135deg, #FF453A, #E0332E);
+      border-radius: var(--pill);
+      color: #fff; font-size: 15px; font-weight: 700;
       cursor: pointer; font-family: inherit; border: none;
-      transition: opacity 0.15s;
+      box-shadow: 0 4px 20px rgba(255,69,58,0.25);
+      transition: all .2s ease;
     }
-    .qr-close:active { opacity: 0.7; }
+    .qr-close:active { transform: scale(.96); }
 
-    /* ===== TUTORIAL OVERLAY (iOS sheet style) ===== */
+    /* ===== TUTORIAL ===== */
     #tut-overlay {
       position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: flex; align-items: flex-end;
-      justify-content: center;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex; align-items: flex-end; justify-content: center;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease;
+      transition: opacity .3s ease;
     }
     #tut-overlay.show { opacity: 1; pointer-events: all; }
     #tut-container {
-      width: 100%; max-width: 400px;
-      background: var(--card);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      padding: 32px 24px calc(24px + var(--safe-bottom));
+      width: 100%; max-width: 420px;
+      background: rgba(20,20,30,0.92);
+      backdrop-filter: blur(60px) saturate(2);
+      -webkit-backdrop-filter: blur(60px) saturate(2);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px 32px 0 0;
+      padding: 36px 28px calc(28px + var(--safe-bottom));
       transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      transition: transform .5s cubic-bezier(0.34,1.56,0.64,1);
     }
     #tut-overlay.show #tut-container { transform: translateY(0); }
     .tut-slide { display: none; text-align: center; }
-    .tut-slide.active { display: block; }
-    .tut-slide .tut-icon { font-size: 48px; margin-bottom: 16px; }
-    .tut-slide h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
-    .tut-slide p { font-size: 15px; color: var(--text-secondary); line-height: 1.5; max-width: 260px; margin: 0 auto; }
-    .tut-dots { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
+    .tut-slide.active { display: block; animation: fadeUp .4s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .tut-slide .tut-icon { font-size: 52px; margin-bottom: 18px; }
+    .tut-slide h3 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+    .tut-slide p { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin: 0 auto; }
+    .tut-dots { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
     .tut-dot {
-      width: 6px; height: 6px; border-radius: 50%;
+      width: 8px; height: 8px; border-radius: 50%;
       background: rgba(255,255,255,0.15); cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all .3s ease;
     }
-    .tut-dot.active { background: var(--accent); transform: scale(1.3); width: 18px; border-radius: 3px; }
-    .tut-nav { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+    .tut-dot.active {
+      background: linear-gradient(135deg, #ff4060, #8b00ff);
+      width: 24px; border-radius: 100px;
+    }
+    .tut-nav { display: flex; gap: 10px; margin-top: 24px; }
     .tut-nav button {
-      flex: 1; padding: 14px; border-radius: var(--radius-sm);
-      border: 1px solid var(--card-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--text); font-size: 15px; font-weight: 600;
+      flex: 1; padding: 15px; border-radius: var(--pill);
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text); font-size: 15px; font-weight: 700;
       cursor: pointer; font-family: inherit;
-      transition: background 0.15s;
+      transition: all .2s ease;
     }
-    .tut-nav button:active { background: rgba(255,255,255,0.08); }
+    .tut-nav button:active { transform: scale(.96); }
     .tut-nav button.primary {
-      background: var(--accent);
+      background: linear-gradient(135deg, #FF453A, #8b00ff);
       border: none; color: #fff;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.25);
     }
-    .tut-nav button.primary:active { opacity: 0.7; background: var(--accent); }
 
-    /* ===== CONFETTI / TRANSITIONS ===== */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ===== BEAMS BACKGROUND ===== */
+    #beamsCanvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      filter: blur(15px);
     }
-    .ani-fade { animation: fadeUp 0.4s ease forwards; }
+    .beams-vignette { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .beams-v-center {
+      background: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 15%, rgba(8,8,12,0.88) 100%);
+    }
+    .beams-v-top { inset: auto; inset-x: 0; top: 0; height: 35vh; background: linear-gradient(to bottom, var(--bg), transparent); }
+    .beams-v-bottom { inset: auto; inset-x: 0; bottom: 0; height: 35vh; background: linear-gradient(to top, var(--bg), transparent); }
   </style>
 </head>
 <body>
 
-  <!-- SPLASH -->
+  <canvas id="beamsCanvas" aria-hidden="true"></canvas>
+  <div class="beams-vignette beams-v-center" aria-hidden="true"></div>
+  <div class="beams-vignette beams-v-top" aria-hidden="true"></div>
+  <div class="beams-vignette beams-v-bottom" aria-hidden="true"></div>
+
   <div id="splash">
     <div class="splash-logo">AETRIS</div>
     <div class="splash-sub">VPN</div>
     <div class="splash-loader"><div class="splash-loader-bar"></div></div>
   </div>
 
-  <!-- APP -->
   <div id="app">
-    <div class="header">
+    <div class="header stagger">
       <div class="header-title">AetrisVPN</div>
     </div>
 
-    <!-- Connection Status -->
-    <div class="connection-card">
-      <div class="conn-left">
-        <div class="conn-dot"></div>
-        <div class="conn-info">
-          <span class="conn-label">Подписки</span>
-          <span class="conn-status">Доступны</span>
+    <div class="status-pill stagger">
+      <div class="status-left">
+        <div class="status-dot"></div>
+        <div>
+          <div class="status-label">Подписки</div>
+          <div class="status-sub">Доступны</div>
         </div>
       </div>
-      <span class="conn-badge">Защищено</span>
+      <span class="status-badge">Защищено</span>
     </div>
 
-    <!-- Settings Group -->
-    <div class="section-label">Подписки</div>
-    <div class="settings-group">
-      <div class="settings-item" data-url="blacklist" data-name="Blacklist" data-label="BLACKLIST">
-        <div class="item-icon icon-bl">🌐</div>
-        <div class="item-body">
-          <div class="item-title">Blacklist</div>
-          <div class="item-desc">Глобальный обход блокировок</div>
-        </div>
-        <span class="item-trailing trailing-bl">Global</span>
-        <span class="item-chevron">›</span>
-      </div>
+    <div class="rail stagger" id="rail">
+      <button class="rail-btn active" data-key="blacklist" onclick="selectSub(0)">
+        <span class="rail-emoji">🌐</span>
+        <span>Blacklist</span>
+      </button>
+      <button class="rail-btn" data-key="whitelist" onclick="selectSub(1)">
+        <span class="rail-emoji">🛡️</span>
+        <span>Whitelist</span>
+      </button>
+      <button class="rail-btn" data-key="lite" onclick="selectSub(2)">
+        <span class="rail-emoji">⚡</span>
+        <span>Lite</span>
+      </button>
+    </div>
 
-      <div class="settings-item" data-url="whitelist" data-name="Whitelist" data-label="WHITELIST">
-        <div class="item-icon icon-wl">🛡️</div>
-        <div class="item-body">
-          <div class="item-title">Whitelist</div>
-          <div class="item-desc">Обход глушилок</div>
+    <div class="glass-card sub-card stagger" id="subCard">
+      <div class="sub-top">
+        <div class="sub-icon" id="subIcon" data-color="red">🌐</div>
+        <div class="sub-meta">
+          <div class="sub-name" id="subName">Blacklist</div>
+          <div class="sub-desc" id="subDesc">Глобальный обход блокировок</div>
         </div>
-        <span class="item-trailing trailing-wl">Russia</span>
-        <span class="item-chevron">›</span>
+        <span class="sub-tag" id="subTag" data-color="red">Global</span>
       </div>
-
-      <div class="settings-item" data-url="lite" data-name="Lite WL" data-label="LITE WL">
-        <div class="item-icon icon-lite">⚡</div>
-        <div class="item-body">
-          <div class="item-title">Lite WL</div>
-          <div class="item-desc">Облегчённая версия</div>
-        </div>
-        <span class="item-trailing trailing-lite">Lite</span>
-        <span class="item-chevron">›</span>
+      <div class="sub-actions">
+        <button class="sub-btn primary" id="btnCopy">
+          <span class="btn-icon">📋</span> Копировать
+        </button>
+        <button class="sub-btn" id="btnQR">
+          <span class="btn-icon">📱</span> QR-код
+        </button>
       </div>
     </div>
 
-    <div class="footer">
-      <button class="footer-link" onclick="openTutorial()">Tutorial</button>
-      <button class="footer-link" onclick="openChannel()">Channel</button>
-      <button class="footer-link" onclick="openDonate()">Donate</button>
+    <div class="footer stagger">
+      <button class="footer-pill footer-share" onclick="openDrawer()">
+        <span class="btn-icon">🔗</span> Поделиться
+      </button>
+      <button class="footer-pill" onclick="openTutorial()">Tutorial</button>
+      <button class="footer-pill" onclick="openChannel()">Channel</button>
+      <button class="footer-pill" onclick="openDonate()">Donate</button>
     </div>
   </div>
 
-  <!-- TOAST -->
   <div id="toast"><span class="toast-icon">✓</span> Copied</div>
 
-  <!-- QR OVERLAY -->
   <div id="qr-overlay" onclick="event.target===this&&closeQR()">
     <div id="qr-modal">
-      <h3 id="qrTitle">Blacklist</h3>
+      <h3><span class="qr-emoji" id="qrEmoji">🌐</span><span id="qrTitle">Blacklist</span></h3>
       <div class="qr-sub">Scan to import subscription</div>
-      <div id="qr-code-container"></div>
-      <div class="qr-url-label" id="qrUrl">url</div>
-      <button class="qr-close" onclick="closeQR()">Close</button>
+      <div id="qr-code-container">
+        <div class="qr-card" id="qrCard">
+          <span class="qr-corner tl"></span>
+          <span class="qr-corner tr"></span>
+          <span class="qr-corner bl"></span>
+          <span class="qr-corner br"></span>
+          <span class="qr-scanline"></span>
+        </div>
+      </div>
+      <div class="qr-url" id="qrUrl">url</div>
+      <button class="qr-close" onclick="closeQR()">Закрыть</button>
     </div>
   </div>
 
-  <!-- TUTORIAL OVERLAY -->
   <div id="tut-overlay" onclick="event.target===this&&closeTutorial()">
     <div id="tut-container">
       <div class="tut-slide active">
         <div class="tut-icon">📱</div>
         <h3>Установи приложение</h3>
-        <p>Скачай Happ, Hiddify, exclave или V2Ray (клиенты впн) из магазина приложений на своём устройстве</p>
+        <p>Скачай Happ, Hiddify, exclave или V2Ray из магазина приложений</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">📋</div>
         <h3>Скопируй подписку</h3>
-        <p>Нажми на Blacklist, Whitelist или Lite WL. Ссылка скопируется в буфер обмена</p>
+        <p>Нажми на любую подписку — ссылка скопируется автоматически</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">📲</div>
         <h3>Импортируй в клиент</h3>
-        <p>Открой VPN-приложение, найди «Импорт из буфера» или «Добавить из буфера» и вставь</p>
+        <p>Открой VPN-приложение и нажми «Добавить из буфера»</p>
       </div>
       <div class="tut-slide">
         <div class="tut-icon">🚀</div>
         <h3>Готово!</h3>
-        <p>Ты подключён. Твой интернет теперь защищён. Добро пожаловать в AetrisVPN!</p>
+        <p>Твой интернет защищён. Добро пожаловать в AetrisVPN!</p>
       </div>
-      <div class="tut-dots" id="tutDots">
+      <div class="tut-dots">
         <span class="tut-dot active" onclick="goTutSlide(0)"></span>
         <span class="tut-dot" onclick="goTutSlide(1)"></span>
         <span class="tut-dot" onclick="goTutSlide(2)"></span>
         <span class="tut-dot" onclick="goTutSlide(3)"></span>
       </div>
       <div class="tut-nav">
-        <button id="tutPrev" onclick="prevTutSlide()">← Back</button>
-        <button id="tutNext" class="primary" onclick="nextTutSlide()">Next →</button>
+        <button id="tutPrev" onclick="prevTutSlide()">Закрыть</button>
+        <button id="tutNext" class="primary" onclick="nextTutSlide()">Далее →</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const SUBSCRIPTIONS = {
-      blacklist: 'https://raw.githubusercontent.com/flaafix/AetrisVPN-black-list/refs/heads/main/configs.txt',
-      whitelist: 'https://raw.githubusercontent.com/flaafix/AetrisVPN/refs/heads/main/AetrisVPN.txt',
-      lite: 'https://raw.githubusercontent.com/flaafix/AetrisVPN-white-list-lite/refs/heads/main/AetrisVPN.txt'
-    };
+  <div class="drawer-overlay" id="drawer" onclick="event.target===this&&closeDrawer()">
+    <div class="drawer-panel">
+      <div class="drawer-handle"></div>
+      <div class="drawer-header">
+        <div class="drawer-logo">A</div>
+        <div class="drawer-title">Поделиться</div>
+      </div>
+      <div class="drawer-desc">Поделись AetrisVPN с друзьями — скопируй ссылку на наш Telegram-канал</div>
+      <button class="drawer-btn-copy" id="drawerCopy" onclick="drawerCopyLink()">
+        <span class="copy-shine"></span>
+        <span class="btn-icon">📋</span> Копировать ссылку на ТГК
+      </button>
+      <button class="drawer-btn-close" onclick="closeDrawer()">Закрыть</button>
+    </div>
+  </div>
 
+  <script src="qrcode.min.js"></script>
+  <script>
+    const SUBS = [
+      { key:'blacklist', url:'https://raw.githubusercontent.com/flaafix/AetrisVPN-black-list/refs/heads/main/configs.txt',
+        name:'Blacklist', desc:'Глобальный обход блокировок', tag:'Global', icon:'🌐', color:'red' },
+      { key:'whitelist', url:'https://raw.githubusercontent.com/flaafix/AetrisVPN/refs/heads/main/AetrisVPN.txt',
+        name:'Whitelist', desc:'Обход глушилок', tag:'Russia', icon:'🛡️', color:'purple' },
+      { key:'lite', url:'https://raw.githubusercontent.com/flaafix/AetrisVPN-white-list-lite/refs/heads/main/AetrisVPN.txt',
+        name:'Lite WL', desc:'Облегчённая версия', tag:'Lite', icon:'⚡', color:'green' }
+    ];
+
+    let currentIdx = 0;
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.expand(); tg.ready(); }
 
-    // ===== SPLASH → MAIN =====
     setTimeout(() => {
       document.getElementById('splash').classList.add('hide');
       document.getElementById('app').classList.add('show');
-    }, 1400);
+    }, 1600);
 
-    // ===== TAP HANDLER =====
-    document.querySelectorAll('.settings-item').forEach(item => {
-      item.addEventListener('click', function(e) {
-        const url = this.dataset.url;
-        const label = this.dataset.label;
-        const text = SUBSCRIPTIONS[url];
-        if (!text) return;
-
-        navigator.clipboard.writeText(text).catch(() => {
-          const ta = document.createElement('textarea');
-          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta);
-        });
-
-        showToast(label);
-        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-      });
-    });
-
-    // ===== LONG PRESS → QR =====
-    let pressTimer = null, isLong = false;
-
-    document.querySelectorAll('.settings-item').forEach(item => {
-      item.addEventListener('touchstart', e => {
-        isLong = false;
-        pressTimer = setTimeout(() => {
-          isLong = true;
-          if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-          openQR(SUBSCRIPTIONS[item.dataset.url], item.dataset.name);
-        }, 500);
-      }, { passive: true });
-      item.addEventListener('touchend', () => {
-        clearTimeout(pressTimer);
-      });
-      item.addEventListener('touchcancel', () => {
-        clearTimeout(pressTimer);
-      });
-    });
-
-    // ===== TOAST =====
-    let toastTimer = null;
-    function showToast(label) {
-      const toast = document.getElementById('toast');
-      toast.querySelector('.toast-icon').textContent = '✓';
-      toast.childNodes[1].textContent = ` ${label} copied`;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    function selectSub(idx) {
+      currentIdx = idx;
+      const s = SUBS[idx];
+      document.getElementById('rail').style.setProperty('--i', idx);
+      document.querySelectorAll('.rail button').forEach((b, i) => b.classList.toggle('active', i === idx));
+      document.getElementById('subIcon').textContent = s.icon;
+      document.getElementById('subIcon').dataset.color = s.color;
+      document.getElementById('subName').textContent = s.name;
+      document.getElementById('subDesc').textContent = s.desc;
+      document.getElementById('subTag').textContent = s.tag;
+      document.getElementById('subTag').dataset.color = s.color;
+      document.getElementById('qrTitle').textContent = s.name;
+      document.getElementById('qrEmoji').textContent = s.icon;
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
 
-    // ===== QR =====
-    function openQR(url, name) {
+    document.getElementById('btnCopy').addEventListener('click', () => {
+      const s = SUBS[currentIdx];
+      navigator.clipboard.writeText(s.url).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = s.url; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      });
+      showToast(s.name);
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    });
+
+    document.getElementById('btnQR').addEventListener('click', () => openQR(SUBS[currentIdx].url, SUBS[currentIdx].name));
+
+    let pressTimer = null;
+    document.getElementById('subCard').addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        openQR(SUBS[currentIdx].url, SUBS[currentIdx].name, SUBS[currentIdx].color);
+      }, 600);
+    }, { passive: true });
+    document.getElementById('subCard').addEventListener('touchend', () => clearTimeout(pressTimer));
+    document.getElementById('subCard').addEventListener('touchcancel', () => clearTimeout(pressTimer));
+
+    let toastTimer = null;
+    function showToast(label) {
+      const t = document.getElementById('toast');
+      t.querySelector('.toast-icon').textContent = '✓';
+      t.childNodes[1].textContent = ' ' + label + ' copied';
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    function openQR(url, name, color) {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      const palette = { red:'#FF453A', purple:'#7C3AED', green:'#34C759', blue:'#0A84FF', orange:'#FF9F0A' };
+      const ac = palette[color] || '#FF453A';
+      const ov = document.getElementById('qr-overlay');
+      ov.style.setProperty('--qr-accent', ac);
+      ov.style.setProperty('--qr-glow', ac + '66');
       document.getElementById('qrTitle').textContent = name;
       document.getElementById('qrUrl').textContent = url;
-      const c = document.getElementById('qr-code-container');
-      c.innerHTML = '';
+      const card = document.getElementById('qrCard');
+      const old = card.querySelector('img');
+      if (old) old.remove();
+
+      const qr = qrcode(0, 'H');
+      qr.addData(url);
+      qr.make();
+      const mods = qr.getModuleCount();
+      const cell = 6;
+      const pad = cell * 4;
+      const size = mods * cell + pad * 2;
+      const cv = document.createElement('canvas');
+      cv.width = size; cv.height = size;
+      const cx = cv.getContext('2d');
+      cx.fillStyle = '#ffffff';
+      cx.fillRect(0, 0, size, size);
+      cx.fillStyle = ac;
+      const r = Math.max(1.5, cell * 0.34);
+      for (let row = 0; row < mods; row++) {
+        for (let col = 0; col < mods; col++) {
+          if (!qr.isDark(row, col)) continue;
+          const x = pad + col * cell;
+          const y = pad + row * cell;
+          cx.beginPath();
+          if (cx.roundRect) cx.roundRect(x, y, cell, cell, r);
+          else cx.rect(x, y, cell, cell);
+          cx.fill();
+        }
+      }
       const img = document.createElement('img');
-      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
-      img.alt = 'QR'; img.style.width = '180px'; img.style.height = '180px'; img.style.borderRadius = '14px';
-      img.onerror = () => { c.innerHTML = '<span style="color:var(--text-secondary);font-size:13px;">QR error</span>'; };
-      c.appendChild(img);
-      document.getElementById('qr-overlay').classList.add('show');
+      img.src = cv.toDataURL('image/png');
+      img.alt = 'QR';
+      card.appendChild(img);
+      card.style.animation = 'none';
+      void card.offsetWidth;
+      card.style.animation = '';
+      ov.classList.add('show');
     }
     function closeQR() { document.getElementById('qr-overlay').classList.remove('show'); }
 
-    // ===== TUTORIAL =====
     let tutSlide = 0;
-    function openTutorial() {
-      tutSlide = 0; updateTut();
-      document.getElementById('tut-overlay').classList.add('show');
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    }
+    function openTutorial() { tutSlide = 0; updateTut(); document.getElementById('tut-overlay').classList.add('show'); }
     function closeTutorial() { document.getElementById('tut-overlay').classList.remove('show'); }
     function goTutSlide(n) { tutSlide = n; updateTut(); }
     function nextTutSlide() { if (tutSlide < 3) { tutSlide++; updateTut(); } else closeTutorial(); }
@@ -590,23 +823,134 @@
     function updateTut() {
       document.querySelectorAll('.tut-slide').forEach((s,i) => s.classList.toggle('active', i===tutSlide));
       document.querySelectorAll('.tut-dot').forEach((d,i) => d.classList.toggle('active', i===tutSlide));
-      document.getElementById('tutPrev').textContent = tutSlide === 0 ? '✕ Close' : '← Back';
-      document.getElementById('tutNext').textContent = tutSlide === 3 ? '✓ Done' : 'Next →';
+      document.getElementById('tutPrev').textContent = tutSlide === 0 ? 'Закрыть' : '← Назад';
+      document.getElementById('tutNext').textContent = tutSlide === 3 ? '✓ Готово' : 'Далее →';
     }
     (function() {
       let sx = 0;
-      document.getElementById('tut-container').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
-      document.getElementById('tut-container').addEventListener('touchend', e => {
+      const el = document.getElementById('tut-container');
+      el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+      el.addEventListener('touchend', e => {
         const dx = e.changedTouches[0].clientX - sx;
         if (Math.abs(dx) > 40) dx > 0 ? prevTutSlide() : nextTutSlide();
       });
     })();
 
-    // ===== CHANNEL =====
     function openChannel() { tg?.openTelegramLink?.('https://t.me/AetrisVPN'); }
-
-    // ===== DONATE =====
     function openDonate() { window.open('https://pay.cloudtips.ru/p/6f2a7544', '_blank'); }
+
+    let shareOpen = false;
+    function openDrawer() {
+      shareOpen = true;
+      document.getElementById('drawer').classList.add('open');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+    function closeDrawer() {
+      shareOpen = false;
+      document.getElementById('drawer').classList.remove('open');
+    }
+    function drawerCopyLink() {
+      const btn = document.getElementById('drawerCopy');
+      btn.classList.remove('copied');
+      void btn.offsetWidth;
+      btn.classList.add('copied');
+      navigator.clipboard.writeText('https://t.me/AetrisVPN').catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = 'https://t.me/AetrisVPN'; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      });
+      showToast('Ссылка скопирована');
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    // ===== BEAMS BACKGROUND =====
+    (function() {
+      const canvas = document.getElementById('beamsCanvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const MINIMUM_BEAMS = 20;
+      let beams = [];
+      let W = 0, H = 0;
+
+      function createBeam() {
+        const angle = -35 + Math.random() * 10;
+        const hueBase = 190;
+        const hueRange = 70;
+        return {
+          x: Math.random() * W * 1.5 - W * 0.25,
+          y: Math.random() * H * 1.5 - H * 0.25,
+          width: 30 + Math.random() * 60,
+          length: H * 2.5,
+          angle: angle,
+          speed: 0.6 + Math.random() * 1.2,
+          opacity: 0.12 + Math.random() * 0.16,
+          hue: hueBase + Math.random() * hueRange,
+          pulse: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.02 + Math.random() * 0.03
+        };
+      }
+
+      function resetBeam(beam, index, total) {
+        const spacing = W / 3;
+        const column = index % 3;
+        beam.y = H + 100;
+        beam.x = column * spacing + spacing / 2 + (Math.random() - 0.5) * spacing * 0.5;
+        beam.width = 100 + Math.random() * 100;
+        beam.speed = 0.5 + Math.random() * 0.4;
+        beam.hue = 190 + (index * 70) / total;
+        beam.opacity = 0.2 + Math.random() * 0.1;
+      }
+
+      function drawBeam(beam) {
+        ctx.save();
+        ctx.translate(beam.x, beam.y);
+        ctx.rotate(beam.angle * Math.PI / 180);
+        const pulsingOpacity = beam.opacity * (0.8 + Math.sin(beam.pulse) * 0.2);
+        const g = ctx.createLinearGradient(0, 0, 0, beam.length);
+        g.addColorStop(0, 'hsla(' + beam.hue + ',85%,65%,0)');
+        g.addColorStop(0.1, 'hsla(' + beam.hue + ',85%,65%,' + (pulsingOpacity * 0.5) + ')');
+        g.addColorStop(0.4, 'hsla(' + beam.hue + ',85%,65%,' + pulsingOpacity + ')');
+        g.addColorStop(0.6, 'hsla(' + beam.hue + ',85%,65%,' + pulsingOpacity + ')');
+        g.addColorStop(0.9, 'hsla(' + beam.hue + ',85%,65%,' + (pulsingOpacity * 0.5) + ')');
+        g.addColorStop(1, 'hsla(' + beam.hue + ',85%,65%,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(-beam.width / 2, 0, beam.width, beam.length);
+        ctx.restore();
+      }
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.scale(dpr, dpr);
+        const total = Math.round(MINIMUM_BEAMS * 1.5);
+        beams = Array.from({ length: total }, createBeam);
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.filter = 'blur(35px)';
+        const total = beams.length;
+        beams.forEach(function(b, i) {
+          b.y -= b.speed;
+          b.pulse += b.pulseSpeed;
+          if (b.y + b.length < -100) resetBeam(b, i, total);
+          drawBeam(b);
+        });
+        ctx.filter = 'none';
+        requestAnimationFrame(animate);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      animate();
+    })();
   </script>
 </body>
 </html>
